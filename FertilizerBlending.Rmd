@@ -1,0 +1,113 @@
+---
+title: "Fertilizer Blending Tool"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+runtime: shiny
+---
+
+
+
+
+  ```{r}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(ggplot2)
+
+```
+
+
+
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+  
+```{r}
+setwd("C:/Users/Turry/Documents/ACAI/FertBlendingTool")
+  textInput("newFert1name", "Enter a Fertilizer 1 name:")
+  textInput("newFert2name", "Enter a Fertilizer 2 name:") 
+  textInput("newFert3name", "Enter a Fertilizer 3 name:")
+  textInput("newFert4name", "Enter a Fertilizer 4 name:")
+  textInput("newFert5name", "Enter a Fertilizer 5 name:")
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+  ### Origins
+  
+```{r}
+values <- reactiveValues()
+  values$newFert1name <- NULL
+  
+  output$q <- renderText({
+  values$newFert1name <- input$newFert1name
+  })
+  
+head(Scenarios_Recom)
+
+type = c(input$newFert1name, input$newFert2name, input$newFert3name, input$newFert4name, input$newFert5name)
+type <- type[!is.na(type)]
+
+
+Scenarios_Recom <- gather(Scenarios_Recom[, c("lat","lon", "plDate", "price",type)], Fertilizer, measurement,
+                            type[1]:type[length(type)], factor_key=TRUE)
+Scenarios_Recom$FertTon <- Scenarios_Recom$measurement/1000
+
+
+saveRDS(Scenarios_Recom, "Scenarios_Recom.RDS")
+
+
+gg <- ggplot(data = Scenarios_Recom, aes(x=Fertilizer, y=FertTon, fill=Fertilizer)) +
+        geom_bar(stat="identity")+
+        facet_wrap(~price)+
+        ggtitle("Price ratios shown in the facets")+
+        xlab("") + ylab("Fertilizer amount (ton)") +
+        theme_bw()+
+        theme(legend.position = "none")
+
+
+ggsave(paste("Tested_Fertilizers_", Sys.Date(), ".png", sep=""), gg, width=10, height = 8)
+
+head(Scenarios_Recom)
+
+Scenarios_Recom <- readRDS("Scenarios_Recom.RDS")
+gg <- ggplot(data = Scenarios_Recom, aes(x=Fertilizer, y=FertTon, fill=Fertilizer)) +
+  geom_bar(stat="identity")+
+  facet_wrap(~price)+
+  ggtitle("Price ratios shown in the facets")+
+  xlab("") + ylab("Fertilizer amount (ton)") +
+  theme_bw()+
+  theme(legend.position = "none")
+
+gg 
+
+ggsave(paste("Tested_Fertilizers_", Sys.Date(), ".png", sep=""), gg, width=10, height = 8)
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+  
+  ### Total Trips
+  
+```{r}
+
+
+
+```
+
+### Trips by Duration
+
+```{r}
+
+
+
+```
+
+
